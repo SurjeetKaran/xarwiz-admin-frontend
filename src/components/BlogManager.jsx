@@ -39,7 +39,7 @@ export default function BlogManager() {
 
   const fetchAuthors = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/admin/authors");
+      const res = await axios.get("https://xarwiz-admin-backend.onrender.com/api/admin/authors");
       setAuthors(res.data);
     } catch (err) {
       console.error("Error fetching authors:", err);
@@ -49,7 +49,7 @@ export default function BlogManager() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/blog/categories");
+      const res = await axios.get("https://xarwiz-admin-backend.onrender.com/api/blog/categories");
       setCategories(res.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
@@ -61,7 +61,7 @@ export default function BlogManager() {
     if (!categoryId) return;
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/blog/categories/${categoryId}/subcategories`
+        `https://xarwiz-admin-backend.onrender.com/api/blog/categories/${categoryId}/subcategories`
       );
       setSubcategories(res.data);
     } catch (err) {
@@ -72,7 +72,7 @@ export default function BlogManager() {
 
   const fetchTags = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/blog/tags");
+      const res = await axios.get("https://xarwiz-admin-backend.onrender.com/api/blog/tags");
       setTags(res.data);
     } catch (err) {
       console.error("Error fetching tags:", err);
@@ -82,7 +82,7 @@ export default function BlogManager() {
 
   const fetchBlogs = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/blog/posts");
+      const res = await axios.get("https://xarwiz-admin-backend.onrender.com/api/blog/posts");
       setBlogs(res.data);
       setLoading(false);
     } catch (err) {
@@ -152,13 +152,13 @@ export default function BlogManager() {
     try {
       if (editingId) {
         await axios.put(
-          `http://localhost:3000/api/admin/blog/posts/${editingId}`,
+          `https://xarwiz-admin-backend.onrender.com/api/admin/blog/posts/${editingId}`,
           payload
         );
         setMessage("✅ Blog post updated successfully!");
       } else {
         await axios.post(
-          "http://localhost:3000/api/admin/blog/posts",
+          "https://xarwiz-admin-backend.onrender.com/api/admin/blog/posts",
           payload
         );
         setMessage("✅ Blog post created successfully!");
@@ -217,7 +217,7 @@ export default function BlogManager() {
     
     setMessage("Deleting blog...");
     try {
-      await axios.delete(`http://localhost:3000/api/admin/blog/posts/${id}`);
+      await axios.delete(`https://xarwiz-admin-backend.onrender.com/api/admin/blog/posts/${id}`);
       setMessage("🗑️ Blog deleted successfully!");
       fetchBlogs();
     } catch (err)

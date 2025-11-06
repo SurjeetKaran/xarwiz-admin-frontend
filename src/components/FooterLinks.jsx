@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 // import { FaPlus, FaEdit, FaTrash } from "react-icons/fa"; // Icons removed
 
-const API_URL = "http://localhost:3000/api/index/footer-links";
+const API_URL = "https://xarwiz-admin-backend.onrender.com/api/index/footer-links";
 
 export default function FooterLinks() {
   const [columns, setColumns] = useState([]);

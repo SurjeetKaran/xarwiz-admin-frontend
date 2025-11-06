@@ -3,7 +3,7 @@ import axios from "axios";
 // Icons removed
 
 const GuestPostingManager = () => {
-  const API_URL = "/api/service-content/guest-posting";
+  const API_URL = "https://xarwiz-admin-backend.onrender.com/api/service-content/guest-posting";
 
   const defaultForm = {
     featuresHeading: "",

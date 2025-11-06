@@ -8,7 +8,7 @@ export default function CategoryManager() {
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  const API_URL = "http://localhost:3000/api/admin/categories";
+  const API_URL = "https://xarwiz-admin-backend.onrender.com/api/admin/categories";
 
   useEffect(() => {
     fetchCategories();

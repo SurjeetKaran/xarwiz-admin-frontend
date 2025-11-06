@@ -15,7 +15,7 @@ export default function AuthorManager() {
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  const API_URL = "http://localhost:3000/api/admin/authors";
+  const API_URL = "https://xarwiz-admin-backend.onrender.com/api/admin/authors";
 
   useEffect(() => {
     fetchAuthors();

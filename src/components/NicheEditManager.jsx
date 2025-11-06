@@ -3,7 +3,7 @@ import axios from "axios";
 // Icons removed
 
 const NicheEditManager = () => {
-  const API_URL = "/api/service-content/niche-edit"; // Ensure this matches your backend route
+  const API_URL = "https://xarwiz-admin-backend.onrender.com/api/service-content/niche-edit"; // Ensure this matches your backend route
 
   const defaultForm = {
     featuresHeading: "",

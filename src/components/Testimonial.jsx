@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 // Icons removed
 
-const API_URL = "http://localhost:3000/api/index/testimonials";
+const API_URL = "https://xarwiz-admin-backend.onrender.com/api/index/testimonials";
 
 export default function Testimonial() {
   const [testimonials, setTestimonials] = useState([]);

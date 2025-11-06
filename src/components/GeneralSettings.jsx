@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 // Icons removed
 
-const API_URL = "http://localhost:3000/api/index/site-info";
+const API_URL = "https://xarwiz-admin-backend.onrender.com/api/index/site-info";
 
 export default function SiteInfoSettings() {
   const [settings, setSettings] = useState({

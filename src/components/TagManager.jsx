@@ -7,7 +7,7 @@ export default function TagManager() {
   const [editingTag, setEditingTag] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "http://localhost:3000/api/admin/tags";
+  const API_URL = "https://xarwiz-admin-backend.onrender.com/api/admin/tags";
 
   useEffect(() => {
     fetchTags();

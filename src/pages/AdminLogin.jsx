@@ -25,11 +25,15 @@ export default function AdminLogin() {
       return;
     }
 
-    try {
-      const { data } = await axios.post("http://localhost:3000/api/admin/login", {
-        username,
-        password,
-      });
+  try {
+  const { data } = await axios.post(
+    "https://xarwiz-admin-backend.onrender.com/api/admin/login",
+    {
+      username,
+      password,
+    }
+  );
+
 
       if (data?.token) {
         localStorage.setItem("token", data.token);

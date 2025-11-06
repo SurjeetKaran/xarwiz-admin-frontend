@@ -45,7 +45,7 @@ export default function AboutContent() {
   const [isFeaturesCollapsed, setIsFeaturesCollapsed] = useState(true);
   const [isPricingCollapsed, setIsPricingCollapsed] = useState(true);
 
-  const API_URL = 'http://localhost:3000/api/about-content';
+  const API_URL = 'https://xarwiz-admin-backend.onrender.com/api/about-content';
 
     // Function to show temporary messages
    const showTempMessage = (msg, type = "success") => {
