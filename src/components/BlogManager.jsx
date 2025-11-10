@@ -1144,8 +1144,8 @@ export default function BlogManager() {
     },
   };
 
-  
 
+  
   return (
     <div style={styles.container}>
       {/* --- MODIFIED: Dynamic Header --- */}
@@ -1419,7 +1419,7 @@ export default function BlogManager() {
           <div style={styles.row}>
             <label style={styles.label}>Content:</label>
             <Editor
-              apiKey="YOUR_TINYMCE_API_KEY" // Replace with your API key
+              apiKey="qr48oji4df7g73dr2ifrjpnuj91rb96tyed8yi8azeqwls0h" // Replace with your API key
               value={formData.content}
               onEditorChange={(content) =>
                 setFormData((prev) => ({ ...prev, content }))
