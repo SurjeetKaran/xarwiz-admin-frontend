@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function CategoryManager() {
@@ -8,18 +8,45 @@ export default function CategoryManager() {
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
 
+  // --- NEW: Add state for token ---
+  const [token, setToken] = useState(null);
+
   const API_URL = "https://xarwiz-admin-backend.onrender.com/api/admin/categories";
 
+  // --- UPDATED: Get token on mount ---
   useEffect(() => {
-    fetchCategories();
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+      // Pass token to initial fetch
+      fetchCategories(storedToken);
+    } else {
+      console.error("No token found, user is not logged in.");
+      // You could set an error message for the user here
+    }
   }, []);
 
-  const fetchCategories = async () => {
+  // --- NEW: Helper function to get auth headers ---
+  const getAuthConfig = (authToken) => {
+    const currentToken = authToken || token;
+    if (!currentToken) return null;
+    return {
+      headers: {
+        Authorization: `Bearer ${currentToken}`,
+      },
+    };
+  };
+
+  const fetchCategories = async (authToken) => {
+    const config = getAuthConfig(authToken);
+    if (!config) return; // Don't fetch if no token
+
     try {
-      const res = await axios.get(API_URL);
+      // --- UPDATED: Pass config to axios.get ---
+      const res = await axios.get(API_URL, config);
       setCategories(res.data);
     } catch (err) {
-      console.error("Error fetching categories:", err);
+      console.error("Error fetching categories:", err.response?.data?.message || err);
     }
   };
 
@@ -56,16 +83,21 @@ export default function CategoryManager() {
     setEditId(null);
   };
 
-  // Create or Update category
+  // --- UPDATED: handleSubmit now sends token ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
+
+    const config = getAuthConfig(); // Get auth config
+    if (!config) {
+      console.error("No token, cannot submit.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const slug = formData.name.trim().toLowerCase().replace(/\s+/g, "-");
-
-      // Build subcategory array with slugs
       const subcategories = formData.subcategories
         .filter((sub) => sub.trim())
         .map((sub) => ({
@@ -73,20 +105,23 @@ export default function CategoryManager() {
           slug: sub.trim().toLowerCase().replace(/\s+/g, "-"),
         }));
 
+      const payload = { name: formData.name, slug, subcategories };
+
       if (editMode) {
-        await axios.put(`${API_URL}/${editId}`, {
-          name: formData.name,
-          slug,
-          subcategories,
-        });
+        // --- UPDATED: Pass config to axios.put ---
+        await axios.put(`${API_URL}/${editId}`, payload, config);
       } else {
-        await axios.post(API_URL, { name: formData.name, slug, subcategories });
+        // --- UPDATED: Pass config to axios.post ---
+        await axios.post(API_URL, payload, config);
       }
 
       resetForm();
-      fetchCategories();
+      fetchCategories(); // This will use the token from state
     } catch (err) {
-      console.error(editMode ? "Error updating category:" : "Error creating category:", err);
+      console.error(
+        editMode ? "Error updating category:" : "Error creating category:",
+        err.response?.data?.message || err
+      );
     } finally {
       setLoading(false);
     }
@@ -106,18 +141,31 @@ export default function CategoryManager() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Delete category
+  // --- UPDATED: handleDelete now sends token ---
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this category? This will also remove it from any posts.")) return;
+    if (
+      !window.confirm(
+        "Delete this category? This will also remove it from any posts."
+      )
+    )
+      return;
+
+    const config = getAuthConfig(); // Get auth config
+    if (!config) {
+      console.error("No token, cannot delete.");
+      return;
+    }
+
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      fetchCategories();
+      // --- UPDATED: Pass config to axios.delete ---
+      await axios.delete(`${API_URL}/${id}`, config);
+      fetchCategories(); // This will use the token from state
     } catch (err) {
-      console.error("Error deleting category:", err);
+      console.error("Error deleting category:", err.response?.data?.message || err);
     }
   };
-  
-  // --- STYLES UPDATED ---
+
+  // --- (Styles are all correct, no changes needed) ---
   const styles = {
     wrapper: {
       display: "flex",
@@ -134,15 +182,15 @@ export default function CategoryManager() {
       boxShadow: "0 6px 24px rgba(0,0,0,0.07)",
       padding: "1.5rem",
     },
-    heading: { 
-      fontSize: "20px", 
-      fontWeight: "600", 
+    heading: {
+      fontSize: "20px",
+      fontWeight: "600",
       marginBottom: "1.5rem",
       color: "#1351d8",
     },
-    subHeading: { 
-      fontSize: "18px", 
-      fontWeight: "600", 
+    subHeading: {
+      fontSize: "18px",
+      fontWeight: "600",
       marginBottom: "1rem",
       color: "#1f2937",
     },
@@ -218,8 +266,8 @@ export default function CategoryManager() {
       cursor: "pointer",
       fontWeight: "500",
     },
-    table: { 
-      width: "100%", 
+    table: {
+      width: "100%",
       borderCollapse: "collapse",
       fontFamily: "'Inter', sans-serif",
     },
@@ -247,7 +295,6 @@ export default function CategoryManager() {
       fontWeight: "500",
     },
   };
-  // --- END OF STYLES ---
 
   return (
     <div style={styles.wrapper}>

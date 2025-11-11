@@ -7,18 +7,44 @@ export default function TagManager() {
   const [editingTag, setEditingTag] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // --- NEW: Add state for token ---
+  const [token, setToken] = useState(null);
+
   const API_URL = "https://xarwiz-admin-backend.onrender.com/api/admin/tags";
 
+  // --- UPDATED: Get token on mount ---
   useEffect(() => {
-    fetchTags();
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+      // Pass token to initial fetch
+      fetchTags(storedToken);
+    } else {
+      console.error("No token found, user is not logged in.");
+    }
   }, []);
 
-  const fetchTags = async () => {
+  // --- NEW: Helper function to get auth headers ---
+  const getAuthConfig = (authToken) => {
+    const currentToken = authToken || token;
+    if (!currentToken) return null;
+    return {
+      headers: {
+        Authorization: `Bearer ${currentToken}`,
+      },
+    };
+  };
+
+  const fetchTags = async (authToken) => {
+    const config = getAuthConfig(authToken);
+    if (!config) return; // Don't fetch if no token
+
     try {
-      const res = await axios.get(API_URL);
+      // --- UPDATED: Pass config to axios.get ---
+      const res = await axios.get(API_URL, config);
       setTags(res.data);
     } catch (err) {
-      console.error("Error fetching tags:", err);
+      console.error("Error fetching tags:", err.response?.data?.message || err);
     }
   };
 
@@ -26,25 +52,36 @@ export default function TagManager() {
     setFormData({ ...formData, name: e.target.value });
   };
 
+  // --- UPDATED: handleSubmit now sends token ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
+
+    const config = getAuthConfig(); // Get auth config
+    if (!config) {
+      console.error("No token, cannot submit.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const slug = formData.name.trim().toLowerCase().replace(/\s+/g, "-");
+      const payload = { name: formData.name, slug };
 
       if (editingTag) {
-        await axios.put(`${API_URL}/${editingTag._id}`, { name: formData.name, slug });
+        // --- UPDATED: Pass config to axios.put ---
+        await axios.put(`${API_URL}/${editingTag._id}`, payload, config);
       } else {
-        await axios.post(API_URL, { name: formData.name, slug });
+        // --- UPDATED: Pass config to axios.post ---
+        await axios.post(API_URL, payload, config);
       }
 
       setFormData({ name: "" });
       setEditingTag(null);
-      fetchTags();
+      fetchTags(); // This will use the token from state
     } catch (err) {
-      console.error("Error saving tag:", err);
+      console.error("Error saving tag:", err.response?.data?.message || err);
     } finally {
       setLoading(false);
     }
@@ -60,17 +97,26 @@ export default function TagManager() {
     setFormData({ name: "" });
   };
 
+  // --- UPDATED: handleDelete now sends token ---
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this tag?")) return;
+
+    const config = getAuthConfig(); // Get auth config
+    if (!config) {
+      console.error("No token, cannot delete.");
+      return;
+    }
+
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      setTags((prev) => prev.filter((t) => t._id !== id));
+      // --- UPDATED: Pass config to axios.delete ---
+      await axios.delete(`${API_URL}/${id}`, config);
+      fetchTags(); // Re-fetch tags from server
     } catch (err) {
-      console.error("Error deleting tag:", err);
+      console.error("Error deleting tag:", err.response?.data?.message || err);
     }
   };
 
-  // --- STYLES UPDATED ---
+  // --- (Styles are all correct, no changes needed) ---
   const styles = {
     wrapper: {
       padding: "1rem 2rem",
@@ -87,23 +133,23 @@ export default function TagManager() {
       boxShadow: "0 6px 24px rgba(0,0,0,0.07)",
       padding: "1.5rem",
     },
-    heading: { 
-      fontSize: "20px", 
-      fontWeight: "600", 
+    heading: {
+      fontSize: "20px",
+      fontWeight: "600",
       marginBottom: "1.5rem",
       color: "#1351d8",
     },
-    subHeading: { 
-      fontSize: "18px", 
-      fontWeight: "600", 
+    subHeading: {
+      fontSize: "18px",
+      fontWeight: "600",
       marginBottom: "1rem",
       color: "#1f2937",
     },
-    form: { 
-      display: "flex", 
-      gap: "1rem", 
-      flexWrap: "wrap", 
-      alignItems: "center" 
+    form: {
+      display: "flex",
+      gap: "1rem",
+      flexWrap: "wrap",
+      alignItems: "center",
     },
     input: {
       padding: "10px 14px",
@@ -136,9 +182,9 @@ export default function TagManager() {
       cursor: "pointer",
       fontWeight: "600",
     },
-    list: { 
-      listStyle: "none", 
-      padding: 0 
+    list: {
+      listStyle: "none",
+      padding: 0,
     },
     listItem: {
       display: "flex",
@@ -149,9 +195,9 @@ export default function TagManager() {
       color: "#1f2937",
       fontWeight: "500",
     },
-    actions: { 
-      display: "flex", 
-      gap: "0.5rem" 
+    actions: {
+      display: "flex",
+      gap: "0.5rem",
     },
     editBtn: {
       background: "#10b981",
@@ -172,7 +218,6 @@ export default function TagManager() {
       fontWeight: "500",
     },
   };
-  // --- END OF STYLES ---
 
   return (
     <div style={styles.wrapper}>

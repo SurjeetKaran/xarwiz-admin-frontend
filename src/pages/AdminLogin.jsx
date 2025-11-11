@@ -3,12 +3,16 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
+  // --- UPDATED: 'username' is now 'email' ---
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // --- NEW: Added state for role ---
+  const [role, setRole] = useState("author"); // Default to 'author'
+
   const [hover, setHover] = useState(false);
   const [message, setMessage] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loggedOut, setLoggedOut] = useState(false);
+  // const [loggedOut, setLoggedOut] = useState(false); // This state wasn't used, safe to remove if you want
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,45 +24,61 @@ export default function AdminLogin() {
   }, [navigate]);
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      setMessage({ text: "Please enter username and password", type: "error" });
+    // --- UPDATED: Check for 'email' ---
+    if (!email || !password) {
+      setMessage({ text: "Please enter email and password", type: "error" });
       return;
     }
 
-  try {
-  const { data } = await axios.post(
-    "https://xarwiz-admin-backend.onrender.com/api/admin/login",
-    {
-      username,
-      password,
-    }
-  );
+    try {
+      const { data } = await axios.post(
+        "https://xarwiz-admin-backend.onrender.com/api/admin/login",
+        {
+          // --- UPDATED: Send email, password, and role ---
+          email,
+          password,
+          role,
+        }
+      );
 
-
-      if (data?.token) {
+      // --- UPDATED: Check for user object as well ---
+      if (data?.token && data?.user) {
         localStorage.setItem("token", data.token);
+        // --- NEW: Save the user info (which includes the role) ---
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         setMessage({ text: "Login successful!", type: "success" });
         setIsLoggedIn(true);
         setTimeout(() => navigate("/adminpanel"), 800);
       } else {
-        setMessage({ text: "Invalid credentials.", type: "error" });
+        setMessage({
+          text: data.message || "Invalid credentials.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
-      setMessage({ text: "Login failed. Please try again.", type: "error" });
+      setMessage({
+        text: error.response?.data?.message || "Login failed. Please try again.",
+        type: "error",
+      });
     }
   };
 
+  // Note: Your app should have a component with a logout button that calls this
   const handleLogout = () => {
     localStorage.removeItem("token");
+    // --- NEW: Remove user info on logout ---
+    localStorage.removeItem("user");
+
     setIsLoggedIn(false);
-    setUsername("");
+    setEmail("");
     setPassword("");
-    setLoggedOut(true);
+    // setLoggedOut(true);
     setMessage({ text: "You have been logged out successfully.", type: "success" });
 
     setTimeout(() => {
-      setLoggedOut(false);
+      // setLoggedOut(false);
       setMessage(null);
       navigate("/adminlogin");
     }, 1500);
@@ -103,6 +123,22 @@ export default function AdminLogin() {
       color: "#1351d8",
       letterSpacing: "0.5px",
     },
+    // --- NEW: Style for the select dropdown ---
+    select: {
+      width: "100%",
+      padding: "0.9rem 1rem",
+      marginBottom: "1.2rem",
+      border: "1px solid #d0d7e2",
+      borderRadius: "10px",
+      fontSize: "1rem",
+      outline: "none",
+      backgroundColor: "#f9fbff",
+      transition: "all 0.2s ease",
+      appearance: "none", // Removes default OS styling
+      backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>')`,
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "right 1rem center",
+    },
     input: {
       width: "100%",
       padding: "0.9rem 1rem",
@@ -129,6 +165,7 @@ export default function AdminLogin() {
       fontSize: "1rem",
       fontWeight: "600",
       transition: "all 0.3s ease",
+      marginTop: '0.5rem', // Added margin-top
       boxShadow: hover
         ? "0 6px 16px rgba(19, 81, 216, 0.25)"
         : "0 4px 12px rgba(19, 81, 216, 0.15)",
@@ -156,22 +193,39 @@ export default function AdminLogin() {
       {message && <div style={styles.messageBox}>{message.text}</div>}
 
       <div style={styles.container}>
-        {/* 🔹 Clean rectangular logo */}
         <img src="/xarvis-fav.png" alt="Xarvis Logo" style={styles.logo} />
 
-        <h1 style={styles.heading}>Admin Login</h1>
+        {/* --- UPDATED: Heading is more generic --- */}
+        <h1 style={styles.heading}>Login</h1>
 
+        {/* --- NEW: Role Selector --- */}
+        <select
+          style={styles.select}
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = styles.inputFocus.boxShadow)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="author">Login as Author</option>
+          <option value="admin">Login as Admin</option>
+        </select>
+
+        {/* --- UPDATED: Input for Email --- */}
         <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           onFocus={(e) =>
             (e.target.style.boxShadow = styles.inputFocus.boxShadow)
           }
           onBlur={(e) => (e.target.style.boxShadow = "none")}
           style={styles.input}
         />
+
+        {/* --- Input for Password (no changes needed) --- */}
         <input
           type="password"
           placeholder="Password"
